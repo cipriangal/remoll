@@ -37,7 +37,7 @@ void remollGenPion::SamplePhysics(remollVertex *vert, remollEvent *evt){
     double V = 2.0*pi*(cos(fTh_min) - cos(fTh_max))*beamE;
 
     double intrad = 2.0*alpha*log(beamE/electron_mass_c2)/pi;
-
+    
     double sigpip = wiser_sigma(beamE/GeV, pf/GeV, th, rad_len*4.0/3.0 + intrad, 0)*nanobarn/GeV;
     double sigpim = wiser_sigma(beamE/GeV, pf/GeV, th, rad_len*4.0/3.0 + intrad, 1)*nanobarn/GeV;
 
