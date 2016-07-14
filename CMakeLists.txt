@@ -62,6 +62,12 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
+### Print out G4 version
+execute_process(COMMAND geant4-config --version	
+                OUTPUT_VARIABLE GEANT4_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "Found Geant4 ${GEANT4_VERSION}")
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
@@ -97,6 +103,12 @@ add_executable(remoll remoll.cc ${sources} ${headers} remollDict.cxx)
 add_library(remollroot SHARED ${libsources} ${libheaders} remollDict.cxx)
 target_link_libraries(remoll ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${Boost_LIBRARIES} )
 target_link_libraries(remollroot ${ROOT_LIBRARIES} ${Boost_LIBRARIES} )
+
+add_executable(xCheckCB xCheckCB.cc ${sources} ${headers} remollDict.cxx)
+target_link_libraries(xCheckCB ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${Boost_LIBRARIES} )
+
+add_executable(runWiser runWiser.cc ${headers})
+target_link_libraries(runWiser ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${Boost_LIBRARIES} )
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
