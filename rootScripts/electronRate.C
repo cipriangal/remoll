@@ -1,6 +1,6 @@
 double Rate[3][6];
 
-void rate(){
+void electronRate(){
 
   gStyle->SetOptStat(0);
   string fnm;
