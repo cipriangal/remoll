@@ -13,10 +13,15 @@ void rate(){
   }
 
   
-  fnm="../output/remollout_Moller_2e6_g4963.root";
+  fnm="remollout.root";
   rate1(rElec,fnm,11);//e-
   integrate(rElec);
 
+  fout->cd();
+  for(int i=0;i<3;i++){
+    rElec[i]->Write();
+  }
+  fout->Close();
 }
 
 void rate1(TH1 *rt[3], string fnm,int partID){
