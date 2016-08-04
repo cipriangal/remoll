@@ -17,7 +17,7 @@ void electronRate(){
   
   fnm="remollout.root";
   rate1(rElec,hElec,fnm,11);//e-
-  integrate(rElec);
+  integrate(rElec,hElec);
 
   fout->cd();
   for(int i=0;i<3;i++){
@@ -98,7 +98,7 @@ void sumUp(double r,int phi, double val){
   nHit[phi][n]++;
 }
 
-void integrate(TH1 *rt[3]){
+void integrate(TH1 *rt[3],TH1 *he[3]){
 
   double edge[3][7]={{0.690,0.730,0.780,0.855,0.935,1.04 ,1.2},//open
   		     {0.690,0.730,0.780,0.855,0.960,1.075,1.2},//transition
@@ -110,7 +110,14 @@ void integrate(TH1 *rt[3]){
     for(int j=0;j<3;j++){
       int b1=rt[j]->GetXaxis()->FindBin(edge[j][i]);
       int b2=rt[j]->GetXaxis()->FindBin(edge[j][i+1]);
-      cout<<" "<<rt[j]->Integral(b1,b2);
+      double dm_rate=rt[j]->Integral(b1,b2);
+      double dm_numb=he[j]->Integral(b1,b2);
+      
+      cout<<"\t"<<dm_rate<<" \pm ";
+      if(dm_numb!=0)
+	cout<<dm_rate/sqrt(dm_numb);
+      else
+	cout<<"0";
       //cout<<i<<" ~~ "<<rt->Integral(b1,b2,"width")<<endl; //this is bin dependent
     }
     cout<<endl;
