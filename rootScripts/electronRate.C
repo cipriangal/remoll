@@ -1,4 +1,5 @@
 double Rate[3][6];
+double nHit[3][6];
 
 void electronRate(){
 
@@ -6,28 +7,33 @@ void electronRate(){
   string fnm;
   string hnm[3]={"open","transition","closed"};
   TFile *fout=new TFile("o_electronRate.root","RECREATE");
-  TH1D *rElec[3];
+  TH1D *rElec[3],*hElec[3];
   for(int i=0;i<3;i++){
     cout<<i<<" "<<Form("Electron %s;r[m];rate[Hz]",hnm[i].c_str())<<" "<<endl;
     rElec[i]=new TH1D(Form("rElec_%d",i),Form("Electron %s;r[m];rate[Hz]",hnm[i].c_str()),400,0.6,1.3);
+    hElec[i]=new TH1D(Form("hElec_%d",i),Form("Electron %s;r[m];counts",hnm[i].c_str()),400,0.6,1.3);
   }
 
   
   fnm="remollout.root";
-  rate1(rElec,fnm,11);//e-
-  integrate(rElec);
+  rate1(rElec,hElec,fnm,11);//e-
+  integrate(rElec,hElec);
 
   fout->cd();
   for(int i=0;i<3;i++){
     rElec[i]->Write();
+    hElec[i]->Write();
   }
   fout->Close();
 }
 
-void rate1(TH1 *rt[3], string fnm,int partID){
+void rate1(TH1 *rt[3], TH1 *he[3],string fnm,int partID){
 
   for(int i=0;i<3;i++)
-    for(int j=0;j<6;j++) Rate[i][j]=0;
+    for(int j=0;j<6;j++) {
+      Rate[i][j]=0;
+      nHit[i][j]=0;
+    }
   cout<<"running "<<rt[0]->GetTitle()<<" "<<fnm.c_str()<<" "<<partID<<endl;
 
   TFile *fin=TFile::Open(fnm.c_str(),"READ");
@@ -58,14 +64,20 @@ void rate1(TH1 *rt[3], string fnm,int partID){
 
       int phSect=phiSect(hitPh[j]);
       rt[phSect]->Fill(hitR[j],rate);
+      he[phSect]->Fill(hitR[j]);
       sumUp(hitR[j],phSect,rate);
     }
   }
   fin->Close();
   for(int i=0;i<6;i++){
     cout<<i<<endl;
-    for(int j=0;j<3;j++)
-      cout<<" "<<Rate[j][i];
+    for(int j=0;j<3;j++){
+      cout<<"\t"<<Rate[j][i]<<" \pm ";
+      if(nHit[j][i]!=0)
+	cout<<Rate[j][i]/sqrt(nHit[j][i]);
+      else
+	cout<<"0";
+    }
     cout<<endl;
   }
 }
@@ -83,24 +95,29 @@ void sumUp(double r,int phi, double val){
   //cout<<endl<<endl<<n<<endl<<endl;
   if(n==-1) cout<<"problems "<<r<<endl;
   Rate[phi][n]+=val;
+  nHit[phi][n]++;
 }
 
-void integrate(TH1 *rt[3]){
+void integrate(TH1 *rt[3],TH1 *he[3]){
 
   double edge[3][7]={{0.690,0.730,0.780,0.855,0.935,1.04 ,1.2},//open
   		     {0.690,0.730,0.780,0.855,0.960,1.075,1.2},//transition
   		     {0.690,0.730,0.780,0.855,0.960,1.1  ,1.2}};//closed
 
-  // double edge[3][7]={{0.690,0.730,0.780,0.855,0.930,1.1 ,1.2},//open
-  // 		     {0.690,0.730,0.780,0.855,0.930,1.1,1.2},//transition
-  // 		     {0.690,0.730,0.780,0.855,0.930,1.1  ,1.2}};//closed
   cout<<rt[0]->GetTitle()<<endl;
   for(int i=0;i<6;i++){
     cout<<" "<<i;    
     for(int j=0;j<3;j++){
       int b1=rt[j]->GetXaxis()->FindBin(edge[j][i]);
       int b2=rt[j]->GetXaxis()->FindBin(edge[j][i+1]);
-      cout<<" "<<rt[j]->Integral(b1,b2);
+      double dm_rate=rt[j]->Integral(b1,b2);
+      double dm_numb=he[j]->Integral(b1,b2);
+      
+      cout<<"\t"<<dm_rate<<" \pm ";
+      if(dm_numb!=0)
+	cout<<dm_rate/sqrt(dm_numb);
+      else
+	cout<<"0";
       //cout<<i<<" ~~ "<<rt->Integral(b1,b2,"width")<<endl; //this is bin dependent
     }
     cout<<endl;
